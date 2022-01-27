@@ -7,6 +7,7 @@ namespace _Script.Tables
     {
         [SerializeField] public int CardID ;
         [SerializeField] public string CardName;
+        [SerializeField] public string CardDescription;
         [SerializeField] public int RarityID;
         [SerializeField] public string CardTags;
         [SerializeField] public int CardSeasonID;

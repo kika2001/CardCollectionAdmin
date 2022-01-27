@@ -19,6 +19,9 @@ namespace _Script.Menus
 
         [Header("Filter")] 
         [SerializeField] private FilterCardSeasons filter;
+
+        [Header("Menus")] 
+        [SerializeField] private EditCard editMenu;
         public override void OnEnable()
         {
             base.OnEnable();
@@ -40,6 +43,7 @@ namespace _Script.Menus
                 GameObject go = Instantiate(cardTemplate, contentTransform);
                 cardsGO.Add(go);
                 go.transform.Find("name").GetComponent<TextMeshProUGUI>().text = card.CardName;
+                go.transform.Find("description").GetComponent<TextMeshProUGUI>().text = card.CardDescription;
                 go.transform.Find("BtnEdit").GetComponent<Button>().onClick.AddListener(()=> EditBooster(card));
                 go.transform.Find("BtnDelete").GetComponent<Button>().onClick.AddListener(()=> DeleteBooster(card));
             }
@@ -99,7 +103,11 @@ namespace _Script.Menus
         }
         private void EditBooster(CardTable card)
         {
-        
+            gameObject.SetActive(false);
+            editMenu.gameObject.SetActive(true);
+            
+            editMenu.SetCard(card);
+            
         }
 
         private void DeleteBooster(CardTable card)

@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using _Script;
 using _Script.Communication;
 using _Script.Extensions;
 using _Script.MenuManager;
@@ -7,12 +9,11 @@ using _Script.Tables;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static System.Int32;
 
-namespace _Script.Menus
+public class EditBoosterMenu : Menu
 {
-	public class CreateBoosterMenu : Menu
-	{
-		[Header("Menus")] [SerializeField] private Menu displayMenu;
+    [Header("Menus")] [SerializeField] private Menu displayMenu;
 	
 		[Header("Available Menu")]
 		[SerializeField] private Transform availableContent;
@@ -34,16 +35,39 @@ namespace _Script.Menus
 		[SerializeField] private TMP_InputField boosterDescription;
 		[SerializeField] private TextMeshProUGUI previewName, previewDescription;
 		private string imagePath="";
-	
+
+		private BoostersTable currentBooster;
+		private bool setupFinished = false;
+
+		public void SetBooster(BoostersTable booster)
+		{
+			currentBooster = booster;
+			boosterName.text = booster.BoosterName;
+			boosterDescription.text=booster.BoosterDescription;
+			imagePath = booster.BoosterImage;
+			
+			ChangeName(booster.BoosterName);
+			ChangeDescription(booster.BoosterDescription);
+
+
+			
+			StartCoroutine(AfterRefreshedCourotine(booster));
+
+		}
+
+		private IEnumerator AfterRefreshedCourotine(BoostersTable booster)
+		{
+			yield return new WaitUntil(() =>setupFinished);
+			var selectCards = booster.BoosterCards.Split(',');
+			foreach (var card in selectCards)
+			{
+				PickCard(availableCards.First(d=>d.CardID==Parse(card)));
+			}
+		}
+		
 		public override void OnEnable()
 		{
 			base.OnEnable();
-			boosterName.text = "";
-			boosterDescription.text="";
-			imagePath = "";
-			
-			ChangeName("");
-			ChangeDescription("");
 			
 			
 			ServerConnection.Instance.ExecutePHP("GetCards.php",SetupCards);
@@ -74,6 +98,7 @@ namespace _Script.Menus
 		
 		private void SetupCards(string text)
 		{
+			setupFinished = false;
 			foreach (var t in availableCardsGO)
 			{
 				Destroy(t);
@@ -96,6 +121,7 @@ namespace _Script.Menus
 				go.transform.Find("name").GetComponent<TextMeshProUGUI>().text = card.CardName;
 				go.transform.Find("BtnPick").GetComponent<Button>().onClick.AddListener(() => PickCard(card));
 			}
+			setupFinished = true;
 		}
 
 		private void PickCard(CardTable card)
@@ -128,7 +154,7 @@ namespace _Script.Menus
 			go.transform.Find("BtnPick").GetComponent<Button>().onClick.AddListener(() => PickCard(card));
 		}
 
-		public void CreateBooster()
+		public void EditBooster()
 		{
 			if (pickedCards.Count <= 0) return;
 			string cardIds="";
@@ -137,7 +163,7 @@ namespace _Script.Menus
 			{
 				cardIds += $",{pickedCards[i].CardID}";
 			}
-			ServerConnection.Instance.ExecutePHP("CreateBooster.php",$"bName={boosterName.text}&bDescription={boosterDescription.text}&bCards={cardIds}&bImage={imagePath}",CheckResult);
+			ServerConnection.Instance.ExecutePHP("EditBooster.php",$"id={currentBooster.BoosterID}&bName={boosterName.text}&bDescription={boosterDescription.text}&bCards={cardIds}&bImage={imagePath}",CheckResult);
 			Debug.Log($"Cards IDS={cardIds}");
 		
 		}
@@ -154,90 +180,5 @@ namespace _Script.Menus
 			}
 		}
 
-		/*
-	public void PickImage()
-	{
 		
-		// Set filters (optional)
-		// It is sufficient to set the filters just once (instead of each time before showing the file browser dialog), 
-		// if all the dialogs will be using the same filters
-		FileBrowser.SetFilters( true, new FileBrowser.Filter( "Images", ".jpg", ".png" ), new FileBrowser.Filter( "Text Files", ".txt", ".pdf" ) );
-
-		// Set default filter that is selected when the dialog is shown (optional)
-		// Returns true if the default filter is set successfully
-		// In this case, set Images filter as the default filter
-		FileBrowser.SetDefaultFilter( ".jpg" );
-
-		// Set excluded file extensions (optional) (by default, .lnk and .tmp extensions are excluded)
-		// Note that when you use this function, .lnk and .tmp extensions will no longer be
-		// excluded unless you explicitly add them as parameters to the function
-		FileBrowser.SetExcludedExtensions( ".lnk", ".tmp", ".zip", ".rar", ".exe" );
-
-		// Add a new quick link to the browser (optional) (returns true if quick link is added successfully)
-		// It is sufficient to add a quick link just once
-		// Name: Users
-		// Path: C:\Users
-		// Icon: default (folder icon)
-		FileBrowser.AddQuickLink( "Users", "C:\\Users", null );
-		
-
-		// Show a save file dialog 
-		// onSuccess event: not registered (which means this dialog is pretty useless)
-		// onCancel event: not registered
-		// Save file/folder: file, Allow multiple selection: false
-		// Initial path: "C:\", Initial filename: "Screenshot.png"
-		// Title: "Save As", Submit button text: "Save"
-		// FileBrowser.ShowSaveDialog( null, null, FileBrowser.PickMode.Files, false, "C:\\", "Screenshot.png", "Save As", "Save" );
-		// Show a select folder dialog 
-		// onSuccess event: print the selected folder's path
-		// onCancel event: print "Canceled"
-		// Load file/folder: folder, Allow multiple selection: false
-		// Initial path: default (Documents), Initial filename: empty
-		// Title: "Select Folder", Submit button text: "Select"
-		// FileBrowser.ShowLoadDialog( ( paths ) => { Debug.Log( "Selected: " + paths[0] ); },
-		//						   () => { Debug.Log( "Canceled" ); },
-		//						   FileBrowser.PickMode.Folders, false, null, null, "Select Folder", "Select" );
-
-		
-			
-		// Coroutine example
-		StartCoroutine( ShowLoadDialogCoroutine() );
-	}
-
-	private void UploadPhoto(string[] paths)
-	{
-		
-		Debug.Log($"Ficheiro Escolhido: {paths[0]}");
-		var file = UnityWebRequest.Get(paths[0]);
-		ServerConnection.Instance.ExecutePostPHP("TestUpload/upload.php",paths[0],file,CheckIfUploaded);
-		
-
-	}
-
-	private void CheckIfUploaded(string obj)
-	{
-		Debug.Log(obj);
-	}
-
-	IEnumerator ShowLoadDialogCoroutine()
-	{
-		// Show a load file dialog and wait for a response from user
-		// Load file/folder: both, Allow multiple selection: true
-		// Initial path: default (Documents), Initial filename: empty
-		// Title: "Load File", Submit button text: "Load"
-		yield return FileBrowser.WaitForLoadDialog( FileBrowser.PickMode.FilesAndFolders, true, null, null, "Load Files and Folders", "Load" );
-
-		// Dialog is closed
-		// Print whether the user has selected some files/folders or cancelled the operation (FileBrowser.Success)
-		Debug.Log( FileBrowser.Success );
-
-		if( FileBrowser.Success )
-		{
-			// Print paths of the selected files (FileBrowser.Result) (null, if FileBrowser.Success is false)
-			UploadPhoto(FileBrowser.Result);
-			
-		}
-	}
-	*/
-	}
 }

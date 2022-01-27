@@ -29,13 +29,13 @@ namespace _Script.Communication
         public void ExecutePHP(string phpPath,string getters, Action<string> action = null)
         {
             string url = $"{settings.url}/{phpPath}?{settings.LoginInfo}&{getters}";
-            //Debug.Log(url);
+            Debug.Log(url);
             StartCoroutine(OpenUrl(url, action));
         }
         public void ExecutePHP(string phpPath, Action<string> action = null)
         {
             string url = $"{settings.url}/{phpPath}?{settings.LoginInfo}";
-            //Debug.Log(url);
+            Debug.Log(url);
             StartCoroutine(OpenUrl(url, action));
         }
 

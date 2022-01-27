@@ -21,6 +21,8 @@ namespace _Script.Menus
         
         [Header("Filter")] 
         [SerializeField] private FilterBoosterCardTag filter;
+        [Header("Menus")] 
+        [SerializeField] private EditBoosterMenu editMenu;
     
         public override void OnEnable()
         {
@@ -31,6 +33,7 @@ namespace _Script.Menus
         private void GetBoosters(string text)
         {
             boosters = JsonExtension.getJsonArray<BoostersTable>(text).ToList();
+            
             SpawnBoosters();
             filter.Refresh();
         
@@ -51,7 +54,10 @@ namespace _Script.Menus
 
         private void EditBooster(BoostersTable booster)
         {
-        
+            gameObject.SetActive(false);
+            editMenu.gameObject.SetActive(true);
+            editMenu.SetBooster(booster);
+            
         }
 
         private void DeleteBooster(BoostersTable booster)
@@ -65,6 +71,7 @@ namespace _Script.Menus
             {
                 Destroy(boostersGO[i]);
             }
+            boostersGO = new List<GameObject>();
             ServerConnection.Instance.ExecutePHP("GetBoosters.php", GetBoosters);
         }
 

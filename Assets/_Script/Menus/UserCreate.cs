@@ -59,7 +59,7 @@ namespace _Script.Menus
             string user = $"user{nameParse[0]}{DateTime.Today.Day}{DateTime.Today.Month}";
             string pass = $"pass{nameParse[0]}{DateTime.Today.Day}{DateTime.Today.Month}";
             string nick = $"{DefaultInitial + nameParse[0] + nameParse[nameParse.Length - 1] + DefaultFinal}";
-            int rank = rankDropDown.value + 1;
+            int rank = ranks[rankDropDown.value].RankID;
 
             string tags = "";
             var tagsSelected=filter.CheckedValues();

@@ -20,6 +20,7 @@ namespace DefaultNamespace
         private List<CardTagTable> tags;
         //Filter which stores all the toggle objects and their values
         private Filter<CardTagTable> tagFilter;
+        public bool refreshed;
         private void Awake()
         {
             
@@ -27,10 +28,28 @@ namespace DefaultNamespace
 
         public override void Refresh()
         {
+            refreshed = false;
             phpPath = "GetCardTags.php";
             base.Refresh();
         }
 
+        public void SelectIndexes(string text)
+        {
+            var splitedTags =text.Split(',');
+            foreach (var t in splitedTags)
+            {
+                foreach (var filterItem in tagFilter.filterItems)
+                {
+                    if (filterItem.item.CardTagID==Int32.Parse(t))
+                    {
+                        filterItem.check = true;
+                        filterItem.go.transform.Find("Toggle").GetComponent<Toggle>().isOn=true;
+                        //Debug.LogWarning($"Selected {filterItem.item.CardTagName}");
+                    }
+                }
+            }
+            
+        }
         private void OnDisable()
         {
             OnToggleChange.RemoveAllListeners();
@@ -51,7 +70,6 @@ namespace DefaultNamespace
         */
         public override void Get(string text)
         {
-            
             itemsGO = new List<GameObject>();
             tags = JsonExtension.getJsonArray<CardTagTable>(text).ToList();
             tagFilter = new Filter<CardTagTable>();
@@ -70,6 +88,8 @@ namespace DefaultNamespace
                     OnToggleChange.Invoke();
                 }); 
             }
+
+            refreshed = true;
         }
         public List<CardTagTable> CheckedValues() => tagFilter.CheckedValues();
     }

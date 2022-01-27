@@ -13,6 +13,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(ToggleGroup))]
 public class FilterCardSeasons : FilterSystem
 {
     [Header("Filter")] 
@@ -21,12 +22,36 @@ public class FilterCardSeasons : FilterSystem
     private List<CardSeasonTable> seasons;
     //Filter which stores all the toggle objects and their values
     private Filter<CardSeasonTable> seasonFilter;
+    public bool refreshed;
+    
+    [SerializeField]private ToggleGroup _group;
+    public bool hasOnlyOne;
 
-    private void Awake()
+    public override void Refresh()
     {
+        refreshed = false;
         phpPath = "GetCardSeasons.php";
+        base.Refresh();
     }
 
+    public void SelectIndexes(string text)
+    {
+        var splitedTags =text.Split(',');
+        foreach (var t in splitedTags)
+        {
+            foreach (var filterItem in seasonFilter.filterItems)
+            {
+                if (filterItem.item.CardSeasonID==Int32.Parse(t))
+                {
+                    filterItem.check = true;
+                    filterItem.go.transform.Find("Toggle").GetComponent<Toggle>().isOn=true;
+                    Debug.LogWarning($"Selected {filterItem.item.CardSeasonName}");
+                }
+            }
+        }
+            
+    }
+    
     private void OnDisable()
     {
         OnToggleChange.RemoveAllListeners();
@@ -44,7 +69,15 @@ public class FilterCardSeasons : FilterSystem
             go.transform.Find("text").GetComponent<TextMeshProUGUI>().text = s.CardSeasonName;
             var toggleGO= go.transform.Find("Toggle").GetComponent<Toggle>();
             toggleGO.isOn = false;
-                
+            if (hasOnlyOne)
+            {
+                Debug.Log("Added To group");
+                toggleGO.group = _group;
+            }
+            else
+            {
+                toggleGO.group = null;
+            }
             var toggle =seasonFilter.Add(s, go, toggleGO.isOn);
             toggleGO.onValueChanged.AddListener((value) =>
             {
@@ -52,6 +85,8 @@ public class FilterCardSeasons : FilterSystem
                 OnToggleChange.Invoke();
             }); 
         }
+
+        refreshed = true;
     }
 
     public List<CardSeasonTable> CheckedValues() => seasonFilter.CheckedValues();

@@ -38,6 +38,7 @@ public class TicketMenu : Menu
         for (int i = 0; i < tickets.Count; i++)
         {
             GameObject go = Instantiate(ticketTemplate, contentTransform);
+            Debug.Log($"Created GO in index:{i}");
             ticketGO.Add(go);
             go.transform.Find("userId").GetComponent<TextMeshProUGUI>().text = tickets[i].PlayerID.ToString();
             go.transform.Find("subject").GetComponent<TextMeshProUGUI>().text = tickets[i].TicketTitle;
@@ -66,24 +67,26 @@ public class TicketMenu : Menu
                     done.isOn = true;
                     break;
             }
+            int tempI = i;
+            todo.onValueChanged.AddListener((b)=>ChangeState(b,-1,tempI));
+            doing.onValueChanged.AddListener((b)=>ChangeState(b,0,tempI));
+            done.onValueChanged.AddListener((b)=>ChangeState(b,1,tempI));
             
-            todo.onValueChanged.AddListener((b)=>ChangeState(b,-1,i));
-            doing.onValueChanged.AddListener((b)=>ChangeState(b,0,i));
-            done.onValueChanged.AddListener((b)=>ChangeState(b,1,i));
             go.GetComponent<Button>().onClick.AddListener(()=>
             {
-                Debug.Log($"Criou Ticket. ID na lista {i}");
-                ViewTicket(i);
+                Debug.Log($"Pressed GO. Index:{tempI}");
+                ViewTicket(tempI);
             });
         }
     }
-
+    
     private void ViewTicket(int id)
     {
         displayMenu.gameObject.SetActive(false);
-        Debug.Log($"ID lista: {id}");
+        //Debug.Log($"ID lista: {id}");        
         viewMenu.SetTicket(tickets[id]);
         viewMenu.gameObject.SetActive(true);
+        
         
     }
 
